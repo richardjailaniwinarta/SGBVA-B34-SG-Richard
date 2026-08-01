@@ -638,72 +638,6 @@
   }
   .recording-btn:hover { opacity: 0.85; }
 
-  /* ---- TAB: USEFUL LINKS ---- */
-  .links-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 12px;
-  }
-  .link-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 16px 18px;
-    text-decoration: none;
-    transition: all 0.18s;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .link-card:hover { border-color: rgba(var(--accent-rgb),0.4); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(var(--shadow-rgb),0.15); }
-  .link-card-icon {
-    width: 42px; height: 42px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-  .link-card-body { flex: 1; min-width: 0; }
-  .link-card-name {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text);
-    display: block;
-    margin-bottom: 3px;
-  }
-  .link-card-src {
-    font-size: 11px;
-    color: var(--text-dim);
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .link-card-arrow { color: var(--text-dim); flex-shrink: 0; }
-  .link-card:hover .link-card-name { color: var(--accent); }
-  .link-card:hover .link-card-arrow { color: var(--accent); }
-
-  /* Link section groups */
-  .links-section-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin: 28px 0 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .links-section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
 
   /* ---- TAB: UPDATES ---- */
   .updates-layout {
@@ -931,7 +865,7 @@
   <div class="tab-area">
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('schedule')">📋 Home</button>
-      <button class="tab-btn" onclick="switchTab('links')">🔗 Useful Links</button>
+      <!-- <button class="tab-btn" onclick="switchTab('links')">🔗 Useful Links</button> -->
     </div>
 
     <div class="search-bar" id="searchBar">
