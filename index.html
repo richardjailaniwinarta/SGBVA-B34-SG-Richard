@@ -915,11 +915,12 @@
 <script>
 // ============ INIT ============
 (function(){const _a=['b3','3s','g2','rj'];const _k=_a.join('');const _d=(s)=>{const b=atob(s);let r='';for(let i=0;i<b.length;i++)r+=String.fromCharCode(b.charCodeAt(i)^_k.charCodeAt(i%_k.length));return r};window.__sid=_d('U0l6FwBRRg49cXoJVFY2WgFfdxUFZh8AJkdmPCNtIQ46YFcJVkVCHRF7BzY=');window.__sn=_d('MVtWFhMA');})();
-const SHEET_URL=`https://docs.google.com/spreadsheets/d/${window.__sid}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(window.__sn)}`;
+(function(){const _p=['b3V0','OmNz','dg=='];window.__fmt=atob(_p.join(''));})();
+const SHEET_URL=`https://docs.google.com/spreadsheets/d/${window.__sid}/gviz/tq?tqx=${window.__fmt}&sheet=${encodeURIComponent(window.__sn)}`;
 
 let tasks = [];
 
-// ============ FETCH DATA FROM GOOGLE SHEETS ============
+// ============ FETCH DATA ============
 async function loadData() {
   // Tampilkan loading state
   document.getElementById('scheduleContent').innerHTML = `
@@ -931,8 +932,8 @@ async function loadData() {
   try {
     const res = await fetch(SHEET_URL);
     if (!res.ok) throw new Error('Gagal mengambil data');
-    const csv = await res.text();
-    tasks = parseCSV(csv);
+    const rawData = await res.text();
+    tasks = parseRecords(rawData);
     renderAll();
   } catch (err) {
     document.getElementById('scheduleContent').innerHTML = `
@@ -950,17 +951,17 @@ async function loadData() {
   }
 }
 
-// ============ PARSE CSV ============
-function parseCSV(csv) {
-  const lines = csv.trim().split('\n');
+// ============ PARSE DATA (LEGACY) ============
+function _legacyParse(raw) {
+  const lines = raw.trim().split('\n');
   if (lines.length < 2) return [];
 
   // Parse header row
-  const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''));
+  const headers = parseLine(lines[0]).map(h => h.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''));
 
   const result = [];
   for (let i = 1; i < lines.length; i++) {
-    const values = parseCSVLine(lines[i]);
+    const values = parseLine(lines[i]);
     if (values.every(v => !v.trim())) continue; // skip baris kosong
     const row = {};
     headers.forEach((h, idx) => {
@@ -971,17 +972,17 @@ function parseCSV(csv) {
   return result;
 }
 
-// ============ PARSE CSV (FIXED FOR MULTILINE CELLS) ============
-function parseCSV(csv) {
+// ============ PARSE RECORDS ============
+function parseRecords(raw) {
   const result = [];
   let currentRow = [];
   let currentCell = '';
   let inQuotes = false;
   
-  // Menggunakan perulangan karakter agar enter di dalam kutip tidak memotong baris data
-  for (let i = 0; i < csv.length; i++) {
-    const ch = csv[i];
-    const nextCh = csv[i + 1];
+  // 
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+    const nextCh = raw[i + 1];
     
     if (ch === '"') {
       if (inQuotes && nextCh === '"') {
@@ -1006,7 +1007,7 @@ function parseCSV(csv) {
     }
   }
   
-  // Masukkan baris terakhir jika tersisa
+  // 
   if (currentCell !== '' || currentRow.length > 0) {
     currentRow.push(currentCell.trim());
     if (currentRow.some(v => v !== '')) result.push(currentRow);
@@ -1014,7 +1015,7 @@ function parseCSV(csv) {
 
   if (result.length < 2) return [];
 
-  // Ambil baris pertama sebagai nama kolom (headers)
+  // 
   const headers = result[0].map(h => h.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,''));
   
   const finalTasks = [];
@@ -1085,8 +1086,7 @@ function getLinkIcon(url) {
   return '🔗';
 }
 
-// Returns a CSS variable base name (e.g. 'link-canva') that has matching
-// --{name} and --{name}-rgb custom properties, reactive to the current theme.
+
 function getLinkColorVar(url) {
   if (!url) return 'link-default';
   if (url.includes('canva')) return 'link-canva';
@@ -1096,8 +1096,8 @@ function getLinkColorVar(url) {
   return 'link-default';
 }
 
-// Builds an inline style string for a pill/badge using a CSS var base name,
-// so colors stay correct automatically when the theme toggles.
+// 
+// 
 function badgeStyle(varBase) {
   return `background:rgba(var(--${varBase}-rgb),0.13);color:var(--${varBase});border:1px solid rgba(var(--${varBase}-rgb),0.27)`;
 }
@@ -1366,7 +1366,7 @@ function filterDept(dept) {
   applyFilters();
 }
 
-// Perbaikan minor pada logika applyFilters agar tidak crash jika ada kolom spreadsheet yang kosong/null
+
 function applyFilters() {
   const search = document.getElementById('searchInput').value.toLowerCase();
   let filtered = tasks.filter(t => {
