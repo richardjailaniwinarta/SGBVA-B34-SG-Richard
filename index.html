@@ -180,10 +180,38 @@
     50% { opacity: 0.5; transform: scale(0.8); }
   }
 
-  /* THEME TOGGLE */
-  .theme-toggle {
+  /* HEADER ACTIONS (theme toggle, logout, nama student) */
+  .header-actions {
     position: absolute;
     top: 24px; right: 32px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 2;
+  }
+  .student-name-badge {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 7px 14px;
+    white-space: nowrap;
+  }
+  .student-name-badge.visible { display: flex; }
+  .student-name-badge .badge-welcome {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+  .student-name-badge span {
+    white-space: nowrap;
+  }
+  .theme-toggle {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -197,7 +225,6 @@
     font-weight: 600;
     color: var(--text-muted);
     transition: all 0.15s;
-    z-index: 2;
   }
   .theme-toggle:hover { border-color: var(--accent); color: var(--text); }
   .theme-toggle-icon {
@@ -210,8 +237,11 @@
     font-size: 13px;
   }
   @media (max-width: 900px) {
-    .theme-toggle { top: 16px; right: 16px; padding: 5px 10px 5px 5px; }
+    .header-actions { top: 16px; right: 16px; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: calc(100vw - 32px); }
+    .theme-toggle { padding: 5px 10px 5px 5px; }
     .theme-toggle-label { display: none; }
+    .student-name-badge { font-size: 11.5px; padding: 6px 10px; }
+    .student-name-badge .badge-welcome { display: none; }
   }
 
   /* LAYOUT */
@@ -805,15 +835,109 @@
     color: var(--text);
     text-decoration: underline;
   }
+
+  /* LOGIN GATE */
+  .login-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    padding: 20px;
+  }
+  body.locked .login-overlay { display: flex; }
+  body.locked header, body.locked .app, body.locked footer { display: none; }
+
+  .login-card {
+    width: 100%;
+    max-width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 28px;
+    box-shadow: 0 10px 40px rgba(var(--shadow-rgb),0.1);
+  }
+  .login-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+  .login-title span { color: var(--accent); }
+  .login-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 22px;
+    font-weight: 300;
+    line-height: 1.5;
+  }
+  .login-input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    margin-bottom: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .login-input:focus { border-color: var(--accent); }
+  .login-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .login-btn:hover { opacity: 0.9; }
+  .login-btn:disabled { opacity: 0.6; cursor: default; }
+  .login-error {
+    margin-top: 12px;
+    font-size: 12.5px;
+    color: var(--error-color);
+    text-align: center;
+  }
 </style>
 </head>
-<body>
+<body class="locked">
+
+<div class="login-overlay">
+  <form class="login-card" id="loginForm" onsubmit="return attemptLogin(event)">
+    <div class="header-tag" style="margin-bottom:16px">Small Group Richard Internal</div>
+    <h2 class="login-title">Masuk ke <span>B34</span> Directory</h2>
+    <p class="login-sub">Masukkan Student ID kamu untuk melanjutkan mengakses directory ini.</p>
+    <input type="text" id="studentIdInput" class="login-input" placeholder="Contoh: 20263404986" autocomplete="off" required>
+    <button type="submit" class="login-btn" id="loginBtn">Masuk</button>
+    <div class="login-error" id="loginError" style="display:none"></div>
+  </form>
+</div>
 
 <header>
-  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
-    <span class="theme-toggle-icon" id="themeToggleIcon">🌙</span>
-    <span class="theme-toggle-label" id="themeToggleLabel">Mode Gelap</span>
-  </button>
+  <div class="header-actions">
+    <div class="student-name-badge" id="studentNameBadge">
+      <span class="badge-welcome">Welcome</span>
+      <span id="studentNameText"></span>
+    </div>
+    <button class="theme-toggle" id="logoutBtn" onclick="logout()" title="Keluar">
+      <span class="theme-toggle-icon">🔒</span>
+      <span class="theme-toggle-label">Keluar</span>
+    </button>
+    <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+      <span class="theme-toggle-icon" id="themeToggleIcon">🌙</span>
+      <span class="theme-toggle-label" id="themeToggleLabel">Mode Gelap</span>
+    </button>
+  </div>
   <div class="header-tag">Small Group Richard Internal</div>
   <h1><span>B34</span> Directory</h1>
   <p class="header-sub">Directory ini, Berisi semua hal yang penting yang mendukung jalan nya SGB VA Course. <br> Khusus Small Group Richard!!</p>
@@ -913,10 +1037,104 @@
 </div>
 
 <script>
-// ============ INIT ============
-(function(){const _a=['b3','3s','g2','rj'];const _k=_a.join('');const _d=(s)=>{const b=atob(s);let r='';for(let i=0;i<b.length;i++)r+=String.fromCharCode(b.charCodeAt(i)^_k.charCodeAt(i%_k.length));return r};window.__sid=_d('U0l6FwBRRg49cXoJVFY2WgFfdxUFZh8AJkdmPCNtIQ46YFcJVkVCHRF7BzY=');window.__sn=_d('MVtWFhMA');})();
-(function(){const _p=['b3V0','OmNz','dg=='];window.__fmt=atob(_p.join(''));})();
-const SHEET_URL=`https://docs.google.com/spreadsheets/d/${window.__sid}/gviz/tq?tqx=${window.__fmt}&sheet=${encodeURIComponent(window.__sn)}`;
+// ============ KONFIGURASI PROXY ============
+const API_URL_B64 = 'aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J4T2ZOaTVtcG9vTzVBRVkwa0hid0ZGS180cVN2UDJkQnJyVkNlYjlraHd1eTdUbFRaRDYzUWd3ZHEwREp1VHZid1MvZXhlYw==';
+const API_URL = atob(API_URL_B64);
+
+function parseCSVRaw(raw) {
+  const result = [];
+  let currentRow = [];
+  let currentCell = '';
+  let inQuotes = false;
+  for (let i = 0; i < raw.length; i++) {
+    const ch = raw[i];
+    const nextCh = raw[i + 1];
+    if (ch === '"') {
+      if (inQuotes && nextCh === '"') { currentCell += '"'; i++; }
+      else { inQuotes = !inQuotes; }
+    } else if (ch === ',' && !inQuotes) {
+      currentRow.push(currentCell.trim()); currentCell = '';
+    } else if ((ch === '\r' || ch === '\n') && !inQuotes) {
+      if (ch === '\r' && nextCh === '\n') i++;
+      currentRow.push(currentCell.trim());
+      if (currentRow.some(v => v !== '')) result.push(currentRow);
+      currentRow = []; currentCell = '';
+    } else {
+      currentCell += ch;
+    }
+  }
+  if (currentCell !== '' || currentRow.length > 0) {
+    currentRow.push(currentCell.trim());
+    if (currentRow.some(v => v !== '')) result.push(currentRow);
+  }
+  return result;
+}
+
+async function attemptLogin(e) {
+  e.preventDefault();
+  const input = document.getElementById('studentIdInput');
+  const errorBox = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+  const studentId = input.value.trim();
+  if (!studentId) return false;
+
+  errorBox.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Memeriksa...';
+
+  try {
+    const res = await fetch(`${API_URL}?action=login&studentId=${encodeURIComponent(studentId)}`);
+    const json = await res.json();
+
+    if (json.success && json.token) {
+      sessionStorage.setItem('b34-token', json.token);
+      if (json.name) sessionStorage.setItem('b34-name', json.name);
+      showStudentName(json.name);
+      document.body.classList.remove('locked');
+      loadData();
+    } else {
+      errorBox.textContent = json.message || 'Student ID tidak ditemukan. Periksa kembali dan coba lagi.';
+      errorBox.style.display = 'block';
+    }
+  } catch (err) {
+    errorBox.textContent = 'Gagal terhubung ke server. Coba lagi beberapa saat lagi.';
+    errorBox.style.display = 'block';
+    console.error('Login error:', err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Masuk';
+  }
+  return false;
+}
+
+function showStudentName(name) {
+  const badge = document.getElementById('studentNameBadge');
+  const text = document.getElementById('studentNameText');
+  if (name) {
+    text.textContent = name;
+    badge.classList.add('visible');
+  } else {
+    badge.classList.remove('visible');
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('b34-token');
+  sessionStorage.removeItem('b34-name');
+  showStudentName('');
+  document.body.classList.add('locked');
+}
+
+function initAuth() {
+  const saved = sessionStorage.getItem('b34-token');
+  if (saved) {
+    showStudentName(sessionStorage.getItem('b34-name'));
+    document.body.classList.remove('locked');
+    loadData();
+  } else {
+    setTimeout(() => document.getElementById('studentIdInput')?.focus(), 100);
+  }
+}
 
 let tasks = [];
 
@@ -926,14 +1144,23 @@ async function loadData() {
   document.getElementById('scheduleContent').innerHTML = `
     <div class="empty-state">
       <div class="loading-spinner"></div>
-      <div style="margin-top:12px">Memuat data dari Google Sheets...</div>
+      <div style="margin-top:12px">Memuat data...</div>
     </div>`;
 
+  const token = sessionStorage.getItem('b34-token');
+  if (!token) { logout(); return; }
+
   try {
-    const res = await fetch(SHEET_URL);
-    if (!res.ok) throw new Error('Gagal mengambil data');
-    const rawData = await res.text();
-    tasks = parseRecords(rawData);
+    const res = await fetch(`${API_URL}?action=data&token=${encodeURIComponent(token)}`);
+    const json = await res.json();
+
+    if (json.error) {
+      // Token tidak valid/kedaluwarsa -> paksa login ulang
+      logout();
+      throw new Error(json.error);
+    }
+
+    tasks = json.rows || [];
     renderAll();
   } catch (err) {
     document.getElementById('scheduleContent').innerHTML = `
@@ -943,13 +1170,14 @@ async function loadData() {
         </svg>
         <div style="color:var(--error-color);font-weight:600;margin-top:8px">Gagal memuat data</div>
         <div style="font-size:12px;margin-top:6px;max-width:400px">
-          Pastikan Google Sheet sudah dipublish ke web.<br>
-          <a href="#" onclick="loadData()" style="color:var(--accent);text-decoration:none">🔄 Coba lagi</a>
+          ${err.message || 'Silakan login ulang.'}<br>
+          <a href="#" onclick="location.reload()" style="color:var(--accent);text-decoration:none">🔄 Muat ulang halaman</a>
         </div>
       </div>`;
-    console.error('Error loading Google Sheets:', err);
+    console.error('Error loading data:', err);
   }
 }
+
 
 // ============ PARSE DATA (LEGACY) ============
 function _legacyParse(raw) {
@@ -1431,7 +1659,7 @@ function initTheme() {
 initTheme();
 document.getElementById('searchInput').addEventListener('input', applyFilters);
 
-loadData();
+initAuth();
 </script>
 <footer>
   <div class="footer-text">Made by Richard</div>
