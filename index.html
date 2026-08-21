@@ -836,103 +836,12 @@
     text-decoration: underline;
   }
 
-  /* LOGIN GATE */
-  .login-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    padding: 20px;
-  }
-  body.locked .login-overlay { display: flex; }
-  body.locked header, body.locked .app, body.locked footer { display: none; }
-
-  .login-card {
-    width: 100%;
-    max-width: 380px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px 28px;
-    box-shadow: 0 10px 40px rgba(var(--shadow-rgb),0.1);
-  }
-  .login-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 22px;
-    font-weight: 800;
-    margin-bottom: 8px;
-  }
-  .login-title span { color: var(--accent); }
-  .login-sub {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 22px;
-    font-weight: 300;
-    line-height: 1.5;
-  }
-  .login-input {
-    width: 100%;
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    margin-bottom: 14px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .login-input:focus { border-color: var(--accent); }
-  .login-btn {
-    width: 100%;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    background: var(--accent);
-    color: #fff;
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    transition: opacity 0.15s;
-  }
-  .login-btn:hover { opacity: 0.9; }
-  .login-btn:disabled { opacity: 0.6; cursor: default; }
-  .login-error {
-    margin-top: 12px;
-    font-size: 12.5px;
-    color: var(--error-color);
-    text-align: center;
-  }
 </style>
 </head>
-<body class="locked">
-
-<div class="login-overlay">
-  <form class="login-card" id="loginForm" onsubmit="return attemptLogin(event)">
-    <div class="header-tag" style="margin-bottom:16px">Small Group Richard Internal</div>
-    <h2 class="login-title">Masuk ke <span>B34</span> Directory</h2>
-    <p class="login-sub">Masukkan Student ID kamu untuk melanjutkan mengakses directory ini.</p>
-    <input type="text" id="studentIdInput" class="login-input" placeholder="Contoh: 20263404986" autocomplete="off" required>
-    <button type="submit" class="login-btn" id="loginBtn">Masuk</button>
-    <div class="login-error" id="loginError" style="display:none"></div>
-  </form>
-</div>
+<body>
 
 <header>
   <div class="header-actions">
-    <div class="student-name-badge" id="studentNameBadge">
-      <span class="badge-welcome">Welcome</span>
-      <span id="studentNameText"></span>
-    </div>
-    <button class="theme-toggle" id="logoutBtn" onclick="logout()" title="Keluar">
-      <span class="theme-toggle-icon">🔒</span>
-      <span class="theme-toggle-label">Keluar</span>
-    </button>
     <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
       <span class="theme-toggle-icon" id="themeToggleIcon">🌙</span>
       <span class="theme-toggle-label" id="themeToggleLabel">Mode Gelap</span>
@@ -1070,72 +979,6 @@ function parseCSVRaw(raw) {
   return result;
 }
 
-async function attemptLogin(e) {
-  e.preventDefault();
-  const input = document.getElementById('studentIdInput');
-  const errorBox = document.getElementById('loginError');
-  const btn = document.getElementById('loginBtn');
-  const studentId = input.value.trim();
-  if (!studentId) return false;
-
-  errorBox.style.display = 'none';
-  btn.disabled = true;
-  btn.textContent = 'Memeriksa...';
-
-  try {
-    const res = await fetch(`${API_URL}?action=login&studentId=${encodeURIComponent(studentId)}`);
-    const json = await res.json();
-
-    if (json.success && json.token) {
-      sessionStorage.setItem('b34-token', json.token);
-      if (json.name) sessionStorage.setItem('b34-name', json.name);
-      showStudentName(json.name);
-      document.body.classList.remove('locked');
-      loadData();
-    } else {
-      errorBox.textContent = json.message || 'Student ID tidak ditemukan. Periksa kembali dan coba lagi.';
-      errorBox.style.display = 'block';
-    }
-  } catch (err) {
-    errorBox.textContent = 'Gagal terhubung ke server. Coba lagi beberapa saat lagi.';
-    errorBox.style.display = 'block';
-    console.error('Login error:', err);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Masuk';
-  }
-  return false;
-}
-
-function showStudentName(name) {
-  const badge = document.getElementById('studentNameBadge');
-  const text = document.getElementById('studentNameText');
-  if (name) {
-    text.textContent = name;
-    badge.classList.add('visible');
-  } else {
-    badge.classList.remove('visible');
-  }
-}
-
-function logout() {
-  sessionStorage.removeItem('b34-token');
-  sessionStorage.removeItem('b34-name');
-  showStudentName('');
-  document.body.classList.add('locked');
-}
-
-function initAuth() {
-  const saved = sessionStorage.getItem('b34-token');
-  if (saved) {
-    showStudentName(sessionStorage.getItem('b34-name'));
-    document.body.classList.remove('locked');
-    loadData();
-  } else {
-    setTimeout(() => document.getElementById('studentIdInput')?.focus(), 100);
-  }
-}
-
 let tasks = [];
 
 // ============ FETCH DATA ============
@@ -1147,16 +990,11 @@ async function loadData() {
       <div style="margin-top:12px">Memuat data...</div>
     </div>`;
 
-  const token = sessionStorage.getItem('b34-token');
-  if (!token) { logout(); return; }
-
   try {
-    const res = await fetch(`${API_URL}?action=data&token=${encodeURIComponent(token)}`);
+    const res = await fetch(`${API_URL}?action=data`);
     const json = await res.json();
 
     if (json.error) {
-      // Token tidak valid/kedaluwarsa -> paksa login ulang
-      logout();
       throw new Error(json.error);
     }
 
@@ -1659,7 +1497,7 @@ function initTheme() {
 initTheme();
 document.getElementById('searchInput').addEventListener('input', applyFilters);
 
-initAuth();
+loadData();
 </script>
 <footer>
   <div class="footer-text">Made by Richard</div>
